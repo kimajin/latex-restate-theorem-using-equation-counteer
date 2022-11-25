@@ -20,6 +20,7 @@ LaTeXにおいて，[thmtools](https://www.ctan.org/pkg/thmtools) の `restatabl
 
 [thmtools](https://www.ctan.org/pkg/thmtools) の `thmt@restatable` environmentの定義において，
 > prevent stepcountering the theorem number
+
 として，カウンタのインクリメントを防止する処置を行っている．
 (Package documentationのA.1.6 Restrictionsを参照のこと)
 
