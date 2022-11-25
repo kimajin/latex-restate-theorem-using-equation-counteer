@@ -1,0 +1,15 @@
+# LaTeX associates
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+
+# VSCode setting
+.vscode/

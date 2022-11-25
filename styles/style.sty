@@ -1,0 +1,93 @@
+\ProvidesPackage{styles/style}
+
+\usepackage{amsmath}
+\numberwithin{equation}{section}
+
+\usepackage{amsthm}
+\usepackage{thmtools}
+
+\declaretheorem[
+  name=定理,
+  sibling=equation, % share counter
+]{theorem}
+
+% renew thmt@restatable in order to restate a theorem sharing a counter with equations.
+% Almost same as original, but we skip preventing stepcountering.
+\renewenvironment{thmt@restatable}[3][]{%
+  \thmt@toks{}% will hold body
+  %
+  \stepcounter{thmt@dummyctr}% used for data storage label.
+  %
+  \long\def\thmrst@store##1{%
+    \@xa\gdef\csname #3\endcsname{%
+      \@ifstar{%
+        \thmt@thisistheonefalse\csname thmt@stored@#3\endcsname
+      }{%
+        \thmt@thisistheonetrue\csname thmt@stored@#3\endcsname
+      }%
+    }%
+    \@xa\long\@xa\gdef\csname thmt@stored@#3\@xa\endcsname\@xa{%
+      \begingroup
+      \ifthmt@thisistheone
+        % these are the valid numbers, store them for the other
+        % occasions.
+        \thmt@rst@storecounters{#3}%
+      \else
+        % this one should use other numbers...
+        % first, fake the theorem number.
+        \@xa\protected@edef\csname the#2\endcsname{%
+          \thmt@trivialref{thmt@@#3}{??}}%
+        % if the number wasn’t there, have a "re-run to get labels right"
+        % warning.
+        \ifcsname r@thmt@@#3\endcsname\else
+          \G@refundefinedtrue
+        \fi
+        % Skip preventing stepcountering.
+        % % prevent stepcountering the theorem number,
+        % % but still, have some number for hyperref, just in case.
+        % %\@xa\let\csname c@#2\endcsname=\c@thmt@dummyctr
+        % %\@xa\let\csname theH#2\endcsname=\theHthmt@dummyctr
+        % disable labeling.
+        \let\label=\thmt@gobble@label
+        \let\ltx@label=\@gobble% amsmath needs this
+        % We shall need to restore the counters at the end
+        % of the environment, so we get
+        % (4.2) [(3.1 from restate)] (4.3)
+        \def\thmt@restorecounters{}%
+        \@for\thmt@ctr:=\thmt@innercounters\do{%
+          \protected@edef\thmt@restorecounters{%
+            \thmt@restorecounters
+            \protect\setcounter{\thmt@ctr}{\arabic{\thmt@ctr}}%
+          }%
+        }%
+        % pull the new semi-static definition of \theequation et al.
+        % from the aux file.
+        \thmt@trivialref{thmt@@#3@data}{}%
+      \fi
+      % call the proper begin-env code, possibly with optional argument
+      % (omit if stored via key-val)
+      \ifthmt@restatethis
+        \thmt@restatethisfalse
+      \else
+        \csname #2\@xa\endcsname\ifx\@nx#1\@nx\else[{#1}]\fi
+      \fi
+      \ifthmt@thisistheone
+        % store a label so we can pick up the number later.
+        \label{thmt@@#3}%
+      \fi
+      % this will be the collected body.
+      ##1%
+      \csname end#2\endcsname
+      % if we faked the counter values, restore originals now.
+      \ifthmt@thisistheone\else\thmt@restorecounters\fi
+      \endgroup
+    }% thmt@stored@#3
+    % in either case, now call the just-created macro,
+    \csname #3\@xa\endcsname\ifthmt@thisistheone\else*\fi
+    % and artificially close the current environment.
+    \@xa\end\@xa{\@currenvir}
+  }% thm@rst@store
+  \thmt@collect@body\thmrst@store
+}{%
+  %% now empty, just used as a marker.
+}
